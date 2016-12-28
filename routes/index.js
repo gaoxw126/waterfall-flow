@@ -67,10 +67,13 @@ router.get('/api/getImage',function(req,res) {
 
 router.get('/api/waterfall',function(req,res) {
 
-	//页码
+	//页码, 浏览器向下拉, 发出的请求.
 	var p = req.query.page;
 	//图片数据接口地址
-	var url = 'http://image.baidu.com/data/imgs?col=%E5%8A%A8%E6%BC%AB&tag=%E5%85%A8%E9%83%A8&sort=1&tag3=&pn='+(p+1)*15+'&rn=15&p=channel&from=1';
+    // p= req.quey.page 随着浏览器向下请求, p++ , 相应请求 百度的 第 p+1页, 当百度无数据时, 返回为空. 会导致下面出错.
+    //var url = 'http://image.baidu.com/data/imgs?col=%E5%8A%A8%E6%BC%AB&tag=%E5%85%A8%E9%83%A8&sort=1&tag3=&pn='+(p+1)*15+'&rn=15&p=channel&from=1'
+    var url = 'http://image.baidu.com/data/imgs?col=%E5%8A%A8%E6%BC%AB&tag=%E5%85%A8%E9%83%A8&sort=1&tag3=&pn='+(1)*15+'&rn=15&p=channel&from=1'
+	//var url = 'http://image.baidu.com/data/imgs?col=%e9%a3%8e%e6%99%af&tag=%c6%fb%b3%b5&sort=1&tag3=&pn='+(p+1)*15+'&rn=13&p=channel&from=2';
 	var ret;
 	var db = require('./db.js');
 
@@ -111,8 +114,9 @@ function saveImagesInfo(ret,connection) {
     //console.log("[saveImage] ret.imgs.slice(0, -1).length  = ", ret.imgs.slice(0, -1).length)
     // 不适用 imgs[]最后一个, 因为最后一个是空{}
 	async.eachSeries(ret['imgs'].slice(0, -1),function(item,next) {
+	//async.eachSeries(ret['imgs'],function(item,next) {
          //console.log("ret elem = ", item)
-        if (item == '{}') {
+        if (item === '{}') {
              console.log("ret elem = null")
         }
 		var id = item.id;
@@ -123,8 +127,6 @@ function saveImagesInfo(ret,connection) {
         console.log("in saveImage");
         if (isNaN(parseFloat(id))) {
                console.log("id is Nan. Exit");
-               next(err)
-                exit()
         }
         if(!id) {
             next();
